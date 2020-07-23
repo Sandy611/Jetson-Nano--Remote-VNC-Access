@@ -1,0 +1,49 @@
+Step 1: Connecting the Board to Your Wireless Network
+It turns out the NVIDIA L4T has poor support for USB Wi-Fi adaptors, and most of the adaptors don’t work with the distribution. So buy a compatible WIFI USB adapter to connect to your local network.
+
+Step 2: Enabling Desktop Sharing
+Unfortunately, the instructions helpfully left on the Jetson’s desktop on how to enable the installed VNC server from the command line don’t work, and going ahead and opening the Settings application on the desktop and clicking on “Desktop Sharing” also fails as the Settings app silently crashes. A problem that appears to be down to an incompatibility with the older Gnome desktop. I will tell you the easiest route to get through and make the Desktop Sharing application work normal.
+
+First, open the terminal and paste this line.
+$ sudo nano /usr/share/glib-2.0/schemas/org.gnome.Vino.gschema.xml
+
+Next, add (paste) the following key into the XML file which just opened in nano editor.
+<key name=’enabled’ type=’b’>
+<summary>Enable remote access to the desktop</summary>
+<description>
+If true, allows remote access to the desktop via the RFB
+protocol. Users on remote machines may then connect to the
+desktop using a VNC viewer.
+</description>
+<default>true</default>
+</key>
+
+Now, after pasting, save and exit. Next, Compile the schemas for Gnome using the command below
+$ sudo glib-compile-schemas /usr/share/glib-2.0/schemas
+
+[Note:- Now, at this stage, the “Desktop Sharing” panel crashing should have stopped. So open the Desktop Sharing app]
+
+After opening the Desktop Sharing app:
+Tick the “Allow other users to view your desktop” and also “Allow other users to control your desktop” checkmarks. 
+Then make sure “You must confirm each access to this machine” is turned off. 
+Finally tick the “Require the user to enter this password” checkmark, and enter a password for the VNC session.
+
+Step 3: Start the VNC server on every startup
+Open ‘startup applications’ using the search box that appears at the top of the screen.
+Now, click "Add" at the right of the box, then type ‘Vino’ in the name box, and then in the command box enter (/usr/lib/vino/vino-server).
+Click Save at the bottom right of the box, and then close the app.
+
+Next, we need to disable encryption of the VNC connection to get things working. To do this, open the terminal and enter the following commands:
+$ gsettings set org.gnome.Vino require-encryption false
+$ gsettings set org.gnome.Vino prompt-enabled false
+
+[Note:- Now go ahead and reboot the board, once rebooted, log back into your account. VNC should now be running and serving the desktop.]
+
+Step 4: Connect to your Nano via VNC
+Find the IP of your Jetson nano board using ‘ifconfig’ command. (see the wlan0 address)
+
+Use this command to check whether your VNC server is running or not:
+$ ps -ef|grep vnc
+
+Step: 5 Connecting to the remote desktop
+Now put the ip address found in wlan0 using the command ‘ifconfig’ in VNC Viewer and the jetson nano's desktop gets connected remotely.
